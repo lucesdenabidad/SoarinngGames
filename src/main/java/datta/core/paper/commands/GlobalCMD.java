@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static datta.core.paper.utilities.Utils.send;
-import static datta.core.paper.utilities.Utils.sendA;
 
 public class GlobalCMD extends BaseCommand {
 
@@ -35,43 +34,44 @@ public class GlobalCMD extends BaseCommand {
 
     @CommandPermission("core.admin")
     @CommandAlias("otpall")
-        public void optimizedTpall(Player player) {
+    public void optimizedTpall(Player player) {
         List<Player> onlinePlayers = new ArrayList<>(Bukkit.getOnlinePlayers());
 
-        if (onlinePlayers.contains(player))
-            onlinePlayers.remove(player);
+        if (onlinePlayers.remove(player)) {
+            int totalPlayers = onlinePlayers.size();
+            final int playersPerTick = Math.max(1, totalPlayers / 10);
 
-        int totalPlayers = onlinePlayers.size();
-        final int playersPerTick = Math.max(1, totalPlayers / 10);
+            send(player, "&a&lEvento &8> &fTeletransportando...");
 
-        send(player, "&a&lEvento &8> &fTeletransportando...");
+            new BukkitRunnable() {
+                int index = 0;
 
-        new BukkitRunnable() {
-            int index = 0;
+                @Override
+                public void run() {
+                    int endIndex = Math.min(index + playersPerTick, totalPlayers);
+                    for (; index < endIndex; index++) {
+                        Player target = onlinePlayers.get(index);
+                        teleportAroundPlayer(target, player);
+                        send(player, "&7(TP-Log) " + target.getName());
+                    }
 
-            @Override
-            public void run() {
-                int endIndex = Math.min(index + playersPerTick, totalPlayers);
-                for (; index < endIndex; index++) {
-                    Player target = onlinePlayers.get(index);
-                    teleportAroundPlayer(target, player);
-                    sendA(player, "&a> " + target.getName() + "...");
+                    if (index >= totalPlayers) {
+                        cancel();
+                        send(player, "&7(TP-LOG) &aTeleportación completada para todos los jugadores!");
+                    }
                 }
-
-                if (index >= totalPlayers) {
-                    cancel();
-                    send(player, "&a&lEvento &8> &f¡Teleportación completada para todos los jugadores!");
-                }
-            }
-        }.runTaskTimer(Core.getInstance(), 0L, 5L);
+            }.runTaskTimer(Core.getInstance(), 0L, 5L);
+        } else {
+            send(player, "&c¡No se pudo encontrar tu jugador en línea!");
+        }
     }
 
     private void teleportAroundPlayer(Player target, Player player) {
         Location playerLocation = player.getLocation();
 
         double radius = 1.5;
-        double offsetX = (int) (Math.random() * (2 * radius + 1)) - radius;
-        double offsetZ = (int) (Math.random() * (2 * radius + 1)) - radius;
+        double offsetX = (Math.random() * (2 * radius + 1)) - radius;
+        double offsetZ = (Math.random() * (2 * radius + 1)) - radius;
 
         Location newLocation = new Location(player.getWorld(),
                 playerLocation.getX() + offsetX,
@@ -80,6 +80,7 @@ public class GlobalCMD extends BaseCommand {
 
         target.teleport(newLocation);
     }
+
 
     @CommandPermission("core.admin")
     @CommandAlias("giveitem")

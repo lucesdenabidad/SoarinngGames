@@ -37,6 +37,21 @@ public class Utils {
         }
     }
 
+    public static boolean playerInZone(Player player, Location pos1, Location pos2) {
+        double minX = Math.min(pos1.getX(), pos2.getX());
+        double minY = Math.min(pos1.getY(), pos2.getY());
+        double minZ = Math.min(pos1.getZ(), pos2.getZ());
+        double maxX = Math.max(pos1.getX(), pos2.getX());
+        double maxY = Math.max(pos1.getY(), pos2.getY());
+        double maxZ = Math.max(pos1.getZ(), pos2.getZ());
+
+        Location playerLocation = player.getLocation();
+
+        return playerLocation.getX() >= minX && playerLocation.getX() <= maxX &&
+                playerLocation.getY() >= minY && playerLocation.getY() <= maxY &&
+                playerLocation.getZ() >= minZ && playerLocation.getZ() <= maxZ;
+    }
+
 
     public static Location[] sLocation(String input) {
         String[] parts = input.split("\\s+");
